@@ -35,6 +35,7 @@ class AutoML:
         cross_validation_steps=3,
         registry=None,
         score_metric=None,
+        number_of_pipelines=None,
         **search_kwargs
     ):
         self.input = input
@@ -52,6 +53,7 @@ class AutoML:
         self.score_metric = score_metric or accuracy
         self.search_kwargs = search_kwargs
         self._unpickled = False
+        self.number_of_pipelines = number_of_pipelines
 
         if random_state:
             np.random.seed(random_state)
@@ -80,12 +82,14 @@ class AutoML:
             self.make_fitness_fn(X, y),
             random_state=self.random_state,
             errors=self.errors,
+            number_of_solutions=self.number_of_pipelines,
             **self.search_kwargs,
         )
 
         self.best_pipeline_, self.best_score_ = search.run(
             self.search_iterations, **kwargs
         )
+        self.top_pipelines_ = search.top_solutions
 
         self.fit_pipeline(X, y)
 

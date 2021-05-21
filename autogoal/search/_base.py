@@ -19,7 +19,7 @@ class SearchAlgorithm:
         self,
         generator_fn=None,
         fitness_fn=None,
-        pop_size=20,
+        pop_size=None,
         maximize=True,
         errors="raise",
         early_stop=0.5,
@@ -28,13 +28,21 @@ class SearchAlgorithm:
         search_timeout: int = 5 * Min,
         target_fn=None,
         allow_duplicates=True,
+        number_of_solutions=None,
+        ranking_fn=None,
     ):
         if generator_fn is None and fitness_fn is None:
             raise ValueError("You must provide either `generator_fn` or `fitness_fn`")
 
         self._generator_fn = generator_fn
         self._fitness_fn = fitness_fn or (lambda x: x)
-        self._pop_size = pop_size
+        self._pop_size = (
+            pop_size
+            if pop_size is not None
+            else 20
+            if number_of_solutions is None or number_of_solutions < 20
+            else number_of_solutions
+        )
         self._maximize = maximize
         self._errors = errors
         self._evaluation_timeout = evaluation_timeout
@@ -43,11 +51,19 @@ class SearchAlgorithm:
         self._search_timeout = search_timeout
         self._target_fn = target_fn
         self._allow_duplicates = allow_duplicates
+        self._number_of_solutions = number_of_solutions
+        self._top_solutions = ()
+        self._top_solutions_fns = ()
+        self._ranking_fn = ranking_fn or (lambda solutions, fns: fns)
 
         if self._evaluation_timeout > 0 or self._memory_limit > 0:
             self._fitness_fn = RestrictedWorkerByJoin(
                 self._fitness_fn, self._evaluation_timeout, self._memory_limit
             )
+
+    @property
+    def top_solutions(self):
+        return self._top_solutions
 
     def run(self, generations=None, logger=None):
         """Runs the search performing at most `generations` of `fitness_fn`.
@@ -84,6 +100,7 @@ class SearchAlgorithm:
                 logger.start_generation(generations, best_fn)
                 self._start_generation()
 
+                solutions = []
                 fns = []
 
                 improvement = False
@@ -117,6 +134,7 @@ class SearchAlgorithm:
                         seen.add(repr(solution))
 
                     logger.eval_solution(solution, fn)
+                    solutions.append(solution)
                     fns.append(fn)
 
                     if (
@@ -167,6 +185,8 @@ class SearchAlgorithm:
                 logger.finish_generation(fns)
                 self._finish_generation(fns)
 
+                self._rank_solutions(solutions, fns)
+
                 if stop:
                     break
 
@@ -200,6 +220,18 @@ class SearchAlgorithm:
 
     def _finish_generation(self, fns):
         pass
+
+    def _rank_solutions(self, solutions, fns):
+        solutions_to_rank = self._top_solutions + tuple(solutions)
+        solutions_fns = self._top_solutions_fns + tuple(fns)
+
+        ranking = self._ranking_fn(solutions_to_rank, solutions_fns)
+        _, ranked_solutions_fns, ranked_solutions = zip(
+            *sorted(zip(ranking, solutions_fns, solutions_to_rank), reverse=True)
+        )
+
+        self._top_solutions = ranked_solutions[: self._number_of_solutions]
+        self._top_solutions_fns = ranked_solutions_fns[: self._number_of_solutions]
 
 
 class Logger:
