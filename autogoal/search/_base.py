@@ -65,7 +65,7 @@ class SearchAlgorithm:
     def top_solutions(self):
         return self._top_solutions
 
-    def run(self, generations=None, logger=None):
+    def run(self, generations=None, logger=None, ranking_fn=None):
         """Runs the search performing at most `generations` of `fitness_fn`.
 
         Returns:
@@ -76,6 +76,9 @@ class SearchAlgorithm:
 
         if generations is None:
             generations = math.inf
+
+        if ranking_fn is None:
+            ranking_fn = self._ranking_fn
 
         if isinstance(logger, list):
             logger = MultiLogger(*logger)
@@ -185,7 +188,7 @@ class SearchAlgorithm:
                 logger.finish_generation(fns)
                 self._finish_generation(fns)
 
-                self._rank_solutions(solutions, fns)
+                self._rank_solutions(ranking_fn, solutions, fns)
 
                 if stop:
                     break
@@ -221,11 +224,11 @@ class SearchAlgorithm:
     def _finish_generation(self, fns):
         pass
 
-    def _rank_solutions(self, solutions, fns):
+    def _rank_solutions(self, ranking_fn, solutions, fns):
         solutions_to_rank = self._top_solutions + tuple(solutions)
         solutions_fns = self._top_solutions_fns + tuple(fns)
 
-        ranking = self._ranking_fn(solutions_to_rank, solutions_fns)
+        ranking = ranking_fn(solutions_to_rank, solutions_fns)
         _, ranked_solutions_fns, ranked_solutions = zip(
             *sorted(zip(ranking, solutions_fns, solutions_to_rank), reverse=True)
         )
