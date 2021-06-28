@@ -60,10 +60,10 @@ RUN poetry install -E dev -E contrib
 EXPOSE 8501
 EXPOSE 8000
 
-USER coder
-
 VOLUME /home/coder/.autogoal
 RUN mkdir -p /home/coder/.autogoal/data && chown coder:coder /home/coder/.autogoal
+
+USER coder
 
 COPY ./ /home/coder/autogoal
 
