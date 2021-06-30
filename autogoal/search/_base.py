@@ -135,11 +135,14 @@ class SearchAlgorithm:
                             logger.end(best_solution, best_fn)
                             raise e from None
 
+                        solutions.append(None)
+                    else:
+                        solutions.append(solution)
+
                     if not self._allow_duplicates:
                         seen.add(repr(solution))
 
                     logger.eval_solution(solution, fn)
-                    solutions.append(solution)
                     fns.append(fn)
 
                     if (
@@ -227,8 +230,13 @@ class SearchAlgorithm:
         pass
 
     def _rank_solutions(self, ranking_fn, solutions, fns):
-        solutions_to_rank = self._top_solutions + tuple(solutions)
-        solutions_fns = self._top_solutions_fns + tuple(fns)
+        solutions_to_rank = list(self._top_solutions)
+        solutions_fns = list(self._top_solutions_fns)
+
+        for solution, fn in zip(solutions, fns):
+            if solution is not None:
+                solutions_to_rank.append(solution)
+                solutions_fns.append(fn)
 
         ranking = ranking_fn(solutions_to_rank, solutions_fns)
         _, ranked_solutions_fns, ranked_solutions = zip(
