@@ -173,6 +173,9 @@ class SearchAlgorithm:
                 else:
                     no_improvement = 0
 
+                if solutions:
+                    self._rank_solutions(ranking_fn, solutions, fns)
+
                 generations -= 1
 
                 if generations <= 0:
@@ -192,8 +195,6 @@ class SearchAlgorithm:
 
                 logger.finish_generation(fns)
                 self._finish_generation(fns)
-
-                self._rank_solutions(ranking_fn, solutions, fns)
 
                 if stop:
                     break
@@ -240,7 +241,11 @@ class SearchAlgorithm:
 
         ranking = ranking_fn(solutions_to_rank, solutions_fns)
         _, ranked_solutions_fns, ranked_solutions = zip(
-            *sorted(zip(ranking, solutions_fns, solutions_to_rank), reverse=True)
+            *sorted(
+                zip(ranking, solutions_fns, solutions_to_rank),
+                key=lambda x: x[0],  # mandatory
+                reverse=True,
+            )
         )
 
         self._top_solutions = ranked_solutions[: self._number_of_solutions]
