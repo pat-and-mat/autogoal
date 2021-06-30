@@ -55,9 +55,7 @@ class SearchAlgorithm:
         self._top_solutions = ()
         self._top_solutions_fns = ()
         self._ranking_fn = ranking_fn or (
-            (lambda solutions, fns: fns)
-            if self.maximize
-            else (lambda solutions, fns: -fns)
+            (lambda solutions, fns: fns) if maximize else (lambda solutions, fns: -fns)
         )
 
         if self._evaluation_timeout > 0 or self._memory_limit > 0:
