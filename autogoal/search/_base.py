@@ -137,6 +137,8 @@ class SearchAlgorithm:
 
                         if self._errors == "raise":
                             logger.end(best_solution, best_fn)
+                            if solutions:
+                                self._rank_solutions(ranking_fn, solutions, fns)
                             raise e from None
 
                         solutions.append(None)
