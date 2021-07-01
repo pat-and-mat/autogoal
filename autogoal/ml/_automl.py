@@ -90,6 +90,7 @@ class AutoML:
             self.search_iterations, **kwargs
         )
         self.top_pipelines_ = search.top_solutions
+        self.top_pipelines_scores_ = search.top_solutions_scores
 
         self.fit_pipeline(X, y)
 

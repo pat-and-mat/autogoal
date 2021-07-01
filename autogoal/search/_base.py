@@ -67,6 +67,10 @@ class SearchAlgorithm:
     def top_solutions(self):
         return self._top_solutions
 
+    @property
+    def top_solutions_scores(self):
+        return self._top_solutions_fns
+
     def run(self, generations=None, logger=None, ranking_fn=None):
         """Runs the search performing at most `generations` of `fitness_fn`.
 
