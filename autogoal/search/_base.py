@@ -137,8 +137,7 @@ class SearchAlgorithm:
 
                         if self._errors == "raise":
                             logger.end(best_solution, best_fn)
-                            if solutions:
-                                self._rank_solutions(ranking_fn, solutions, fns)
+                            self._rank_solutions(ranking_fn, solutions, fns)
                             raise e from None
 
                         solutions.append(None)
@@ -179,8 +178,7 @@ class SearchAlgorithm:
                 else:
                     no_improvement = 0
 
-                if solutions:
-                    self._rank_solutions(ranking_fn, solutions, fns)
+                self._rank_solutions(ranking_fn, solutions, fns)
 
                 generations -= 1
 
@@ -240,10 +238,15 @@ class SearchAlgorithm:
         solutions_to_rank = list(self._top_solutions)
         solutions_fns = list(self._top_solutions_fns)
 
+        found_new = False
         for solution, fn in zip(solutions, fns):
             if solution is not None:
+                found_new = True
                 solutions_to_rank.append(solution)
                 solutions_fns.append(fn)
+
+        if not found_new:
+            return
 
         ranking = ranking_fn(solutions_to_rank, solutions_fns)
         _, ranked_solutions_fns, ranked_solutions = zip(
