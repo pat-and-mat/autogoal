@@ -235,6 +235,9 @@ class SearchAlgorithm:
         pass
 
     def _rank_solutions(self, ranking_fn, solutions, fns):
+        if self._number_of_solutions is None:
+            return
+
         solutions_to_rank = list(self._top_solutions)
         solutions_fns = list(self._top_solutions_fns)
 
