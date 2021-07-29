@@ -71,7 +71,7 @@ class SearchAlgorithm:
     def top_solutions_scores(self):
         return self._top_solutions_fns
 
-    def run(self, generations=None, logger=None, ranking_fn=None):
+    def run(self, generations=None, logger=None, ranking_fn=None, constraint=None):
         """Runs the search performing at most `generations` of `fitness_fn`.
 
         Returns:
@@ -132,7 +132,8 @@ class SearchAlgorithm:
                         logger.sample_solution(solution)
                         fn = self._fitness_fn(solution)
                     except Exception as e:
-                        fn = 0.0
+                        failed = True
+                        fn = -math.inf if self._maximize else math.inf
                         logger.error(e, solution)
 
                         if self._errors == "raise":
@@ -142,6 +143,7 @@ class SearchAlgorithm:
 
                         solutions.append(None)
                     else:
+                        failed = False
                         solutions.append(solution)
 
                     if not self._allow_duplicates:
@@ -151,9 +153,13 @@ class SearchAlgorithm:
                     fns.append(fn)
 
                     if (
-                        best_fn is None
-                        or (fn > best_fn and self._maximize)
-                        or (fn < best_fn and not self._maximize)
+                        not failed
+                        and (
+                            best_fn is None
+                            or (fn > best_fn and self._maximize)
+                            or (fn < best_fn and not self._maximize)
+                        )
+                        and (constraint is None or constraint(solution, fn))
                     ):
                         logger.update_best(solution, fn, best_solution, best_fn)
                         best_solution = solution
