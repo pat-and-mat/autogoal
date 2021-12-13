@@ -94,6 +94,18 @@ class SearchAlgorithm:
         else:
             early_stop = self._early_stop
 
+        if constraint is not None:
+            _constraint = constraint
+
+            def logged_constraint(solution, fn):
+                try:
+                    return _constraint(solution, fn)
+                except Exception as e:
+                    logger.error("Error while checking constraints: %s" % e, solution)
+                    return False
+
+            constraint = logged_constraint
+
         best_solution = None
         best_fn = None
         no_improvement = 0
