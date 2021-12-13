@@ -137,6 +137,8 @@ class SearchAlgorithm:
                         logger.error(e, solution)
 
                         if self._errors == "raise":
+                            if best_fn is None:
+                                best_fn = -math.inf if self._maximize else math.inf
                             logger.end(best_solution, best_fn)
                             self._rank_solutions(ranking_fn, solutions, fns)
                             raise e from None
@@ -212,6 +214,8 @@ class SearchAlgorithm:
         except KeyboardInterrupt:
             pass
 
+        if best_fn is None:
+            best_fn = -math.inf if self._maximize else math.inf
         logger.end(best_solution, best_fn)
         return best_solution, best_fn
 
