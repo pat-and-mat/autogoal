@@ -11,7 +11,7 @@ from autogoal.utils import nice_repr
 class SpacyNLP(AlgorithmBase):
     def __init__(
         self,
-        language: CategoricalValue("en", "es"),
+        language: CategoricalValue("en_core_web_sm", "es_core_news_sm"),
         extract_pos: BooleanValue(),
         extract_lemma: BooleanValue(),
         extract_pos_tag: BooleanValue(),
