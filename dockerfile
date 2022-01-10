@@ -2,7 +2,7 @@
 # GPU base image
 # ---------------------
 
-FROM tensorflow/tensorflow:latest-gpu-py3
+FROM tensorflow/tensorflow:2.2.2-gpu-py3
 
 RUN pip install -U pip
 RUN pip install tensorflow_addons==0.9.1
