@@ -165,16 +165,21 @@ class BertTokenizeEmbedding(AlgorithmBase):
                 )
 
         self.print("Tokenizing...", end="", flush=True)
-        tokens = [
-            self.tokenizer(x, max_length=32, pad_to_max_length=True) for x in input
+        all_inputs = [
+            self.tokenizer(
+                x, max_length=32, pad_to_max_length=True, return_tensors="pt"
+            )
+            for x in input
         ]
         self.print("done")
 
-        ids = torch.tensor(tokens).to(self.device)
-
+        all_outputs = []
         with torch.no_grad():
             self.print("Embedding...", end="", flush=True)
-            output = self.model(ids)[0].numpy()
+            for inputs in all_inputs:
+                inputs = inputs.to(self.device)
+                output = self.model(**inputs).last_hidden_state.numpy()
+                all_outputs.append(output)
             self.print("done")
 
-        return output
+        return np.concatenate(all_outputs)
