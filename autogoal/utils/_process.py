@@ -129,7 +129,7 @@ class RestrictedWorkerByJoin(RestrictedWorker):
             result = result_bucket["result"]
         else:
             rprocess.terminate()
-            raise TimeoutError()
+            raise TimeoutError("Time out")
 
         if isinstance(result, Exception):  # Exception ocurred
             raise result

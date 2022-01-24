@@ -72,7 +72,7 @@ class ResourceManager:
 
     def _run_for(self, function, *args, **kwargs):
         def signal_handler(*args):
-            raise TimeoutError()
+            raise TimeoutError("Time out")
 
         try:
             signal.signal(signal.SIGALRM, signal_handler)
