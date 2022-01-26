@@ -6,7 +6,7 @@ FROM tensorflow/tensorflow:2.2.2-gpu-py3
 
 RUN pip install -U pip
 RUN pip install tensorflow_addons==0.9.1
-RUN pip install torch torchvision
+RUN pip install torch==1.4.0 torchvision==0.5.0
 
 # =====================
 # User stuff
