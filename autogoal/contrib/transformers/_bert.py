@@ -178,8 +178,8 @@ class BertTokenizeEmbedding(AlgorithmBase):
             self.print("Embedding...", end="", flush=True)
             for inputs in all_inputs:
                 inputs = inputs.to(self.device)
-                output = self.model(**inputs).last_hidden_state.numpy()
+                output = self.model(**inputs).last_hidden_state
                 all_outputs.append(output)
             self.print("done")
 
-        return np.concatenate(all_outputs)
+        return torch.cat(all_outputs).cpu().numpy()
