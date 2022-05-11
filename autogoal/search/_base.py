@@ -155,26 +155,24 @@ class SearchAlgorithm:
                             logger.end(best_solution, best_fn)
                             self._rank_solutions(ranking_fn, solutions, fns)
                             raise e from None
-
-                        solutions.append(None)
                     else:
                         failed = False
-                        solutions.append(solution)
 
                     if not self._allow_duplicates:
                         seen.add(repr(solution))
 
-                    logger.eval_solution(solution, fn)
+                    satisfies_constraint = not failed and (
+                        constraint is None or constraint(solution, fn)
+                    )
+                    solutions.append(solution if satisfies_constraint else None)
                     fns.append(fn)
 
-                    if (
-                        not failed
-                        and (
-                            best_fn is None
-                            or (fn > best_fn and self._maximize)
-                            or (fn < best_fn and not self._maximize)
-                        )
-                        and (constraint is None or constraint(solution, fn))
+                    logger.eval_solution(solution, fn)
+
+                    if satisfies_constraint and (
+                        best_fn is None
+                        or (fn > best_fn and self._maximize)
+                        or (fn < best_fn and not self._maximize)
                     ):
                         logger.update_best(solution, fn, best_solution, best_fn)
                         best_solution = solution
