@@ -22,7 +22,6 @@ from rich.panel import Panel
 class NSSearch:
     def __init__(
         self,
-        dims,
         generator_fn=None,
         fitness_fn=None,
         pop_size=20,
@@ -33,13 +32,11 @@ class NSSearch:
         memory_limit: int = 4 * Gb,
         search_timeout: int = 5 * Min,
         target_fn=None,
-        worst_fn=None,
         allow_duplicates=True,
     ):
         if generator_fn is None and fitness_fn is None:
             raise ValueError("You must provide either `generator_fn` or `fitness_fn`")
 
-        self._dims = dims
         self._generator_fn = generator_fn
         self._fitness_fn = fitness_fn or (lambda x: x)
         self._pop_size = pop_size
@@ -50,7 +47,6 @@ class NSSearch:
         self._early_stop = early_stop
         self._search_timeout = search_timeout
         self._target_fn = target_fn
-        self._worst_fn = worst_fn
         self._allow_duplicates = allow_duplicates
 
         if self._evaluation_timeout > 0 or self._memory_limit > 0:
@@ -115,8 +111,8 @@ class NSSearch:
                         logger.sample_solution(solution)
                         fn = self._fitness_fn(solution)
                     except Exception as e:
-                        fn = (-math.inf if self._maximize else math.inf,) * len(
-                            self._dims
+                        fn = tuple(
+                            (-math.inf if m else math.inf) for m in self._maximize
                         )
                         logger.error(e, solution)
 
@@ -160,13 +156,13 @@ class NSSearch:
                 fronts = self.non_dominated_fronts(fns)
                 solution, fn = (solutions[fronts[0][0]], fns[fronts[0][0]])
 
-                if best_fn is None or self.dominates(fn, best_fn):
+                if best_fn is None or self._dominates(fn, best_fn):
                     logger.update_best(solution, fn, best_solution, best_fn)
                     best_solution = solution
                     best_fn = fn
                     improvement = True
 
-                    if self._target_fn is not None and self.dominates(
+                    if self._target_fn is not None and self._dominates(
                         best_fn, self._target_fn
                     ):
                         stop = True
@@ -228,9 +224,9 @@ class NSSearch:
 
         for i, fn_i in enumerate(fns):
             for j, fn_j in enumerate(fns):
-                if self.dominates(fn_i, fn_j):
+                if self._dominates(fn_i, fn_j):
                     dominated_fns[i].append(j)
-                elif self.dominates(fn_j, fn_i):
+                elif self._dominates(fn_j, fn_i):
                     domination_counts[i] += 1
             if domination_counts[i] == 0:
                 fronts[0].append(i)
@@ -248,12 +244,14 @@ class NSSearch:
 
         return fronts[:-1]
 
-    def dominates(self, a, b) -> bool:
-        if not self._maximize:
-            a, b = b, a
-        return all(a[i] >= b[i] for i in range(self._dims)) and any(
-            a[i] > b[i] for i in range(self._dims)
+    def _dominates(self, a, b) -> bool:
+        is_non_dominated = all(
+            (a[i] >= b[i] if m else a[i] <= b[i]) for i, m in enumerate(self._maximize)
         )
+        dominates = any(
+            (a[i] > b[i] if m else a[i] < b[i]) for i, m in enumerate(self._maximize)
+        )
+        return is_non_dominated and dominates
 
     def _build_sampler(self):
         raise NotImplementedError()
@@ -338,7 +336,7 @@ class NSPESearch(NSSearch):
             raise ValueError("Front is negative.")
 
         crowding_distances = [0] * len(front)
-        for m in range(self._dims):
+        for m in range(len(self._maximize)):
             front = list(sorted(front, key=lambda i: fns[i][m]))
             crowding_distances[front[0]] = math.inf
             crowding_distances[front[len(front) - 1]] = math.inf
