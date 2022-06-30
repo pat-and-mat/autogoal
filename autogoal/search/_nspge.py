@@ -11,7 +11,7 @@ import termcolor
 import json
 
 import autogoal.logging
-from autogoal.search._base import Logger, MultiLogger
+from autogoal.search._base import Logger, ConsoleLogger, MultiLogger
 
 from autogoal.utils import RestrictedWorkerByJoin, Min, Gb, Sec
 from autogoal.sampling import ModelSampler, ReplaySampler, merge_updates, update_model
@@ -273,7 +273,7 @@ class NSPESearch(NSSearch):
         random_state: Optional[int] = None,
         name: str = None,
         save: bool = False,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self._learning_factor = learning_factor
@@ -355,3 +355,59 @@ class NSPESearch(NSSearch):
         with open(name_pickle_file) as f:
             loaded_obj = pickle.load(f)
         self._model = loaded_obj
+
+
+class ConsoleLoggerWithMOSupport(ConsoleLogger):
+    def start_generation(self, generations, best_fn):
+        if not isinstance(best_fn, (list, tuple)):
+            return super().start_generation(generations, best_fn)
+
+        current_time = time.time()
+        elapsed = int(current_time - self.start_time)
+        avg_time = elapsed / (self.start_generations - generations + 1)
+        remaining = int(avg_time * generations)
+        elapsed = datetime.timedelta(seconds=elapsed)
+        remaining = datetime.timedelta(seconds=remaining)
+
+        best_fn_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in best_fn)
+
+        print(
+            self.emph("New generation started"),
+            self.success(f"best_fn={best_fn_str_tuple}"),
+            self.primary(f"generations={generations}"),
+            self.primary(f"elapsed={elapsed}"),
+            self.primary(f"remaining={remaining}"),
+        )
+
+    def end(self, best, best_fn):
+        if not isinstance(best_fn, (list, tuple)):
+            return super().end(best, best_fn)
+
+        best_fn_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in best_fn)
+        print(
+            self.emph(
+                "Search completed: best_fn=%s, best=\n%r" % (best_fn_str_tuple, best)
+            )
+        )
+
+    def eval_solution(self, solution, fitness):
+        if not isinstance(fitness, (list, tuple)):
+            return super().eval_solution(solution, fitness)
+
+        fitness_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in fitness)
+        print(self.primary("Fitness=%s" % fitness_str_tuple))
+
+    def update_best(self, new_best, new_fn, previous_best, previous_fn):
+        if not isinstance(new_fn, (list, tuple)) and not isinstance(
+            previous_fn, (list, tuple)
+        ):
+            return super().update_best(new_best, new_fn, previous_best, previous_fn)
+
+        new_fn_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in new_fn)
+        prev_fn_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in previous_fn)
+        print(
+            self.success(
+                "Best solution: improved=%s, previous=%s"
+                % (new_fn_str_tuple, prev_fn_str_tuple or 0)
+            )
+        )
