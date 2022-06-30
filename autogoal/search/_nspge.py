@@ -1,6 +1,7 @@
 import random
 import logging
 import pickle
+import traceback
 from typing import Dict, List, Optional
 import enlighten
 import time
@@ -190,7 +191,11 @@ class NSSearch:
                     break
 
                 logger.finish_generation(fns)
-                self._finish_generation(fns, fronts)
+                try:
+                    self._finish_generation(fns, fronts)
+                except Exception as e:
+                    print(traceback.print_exception(type(e), e, e.__traceback__))
+                    raise
 
                 if stop:
                     break
