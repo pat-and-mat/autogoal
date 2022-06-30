@@ -1,3 +1,4 @@
+import random
 import logging
 import pickle
 from random import random
