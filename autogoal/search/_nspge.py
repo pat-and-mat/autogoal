@@ -373,7 +373,7 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
 
         print(
             self.emph("New generation started"),
-            self.success(f"best_fn={best_fn_str_tuple}"),
+            self.success(f"best_fn={repr(best_fn_str_tuple)}"),
             self.primary(f"generations={generations}"),
             self.primary(f"elapsed={elapsed}"),
             self.primary(f"remaining={remaining}"),
@@ -386,7 +386,7 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
         best_fn_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in best_fn)
         print(
             self.emph(
-                "Search completed: best_fn=%s, best=\n%r" % (best_fn_str_tuple, best)
+                "Search completed: best_fn=%r, best=\n%r" % (best_fn_str_tuple, best)
             )
         )
 
@@ -395,7 +395,7 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
             return super().eval_solution(solution, fitness)
 
         fitness_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in fitness)
-        print(self.primary("Fitness=%s" % fitness_str_tuple))
+        print(self.primary("Fitness=%r" % fitness_str_tuple))
 
     def update_best(self, new_best, new_fn, previous_best, previous_fn):
         if not isinstance(new_fn, (list, tuple)) and not isinstance(
@@ -407,7 +407,7 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
         prev_fn_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in previous_fn)
         print(
             self.success(
-                "Best solution: improved=%s, previous=%s"
+                "Best solution: improved=%r, previous=%r"
                 % (new_fn_str_tuple, prev_fn_str_tuple or 0)
             )
         )
