@@ -373,6 +373,7 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
 
         best_fn_str_tuple = tuple(f"{float(fn or 0.0):0.3}" for fn in best_fn)
 
+        print("Start generation")
         print(
             self.emph("New generation started"),
             self.success(f"best_fn={repr(best_fn_str_tuple)}"),
