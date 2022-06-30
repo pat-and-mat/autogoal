@@ -341,11 +341,11 @@ class NSPESearch(NSSearch):
         elif len(front) < 0:
             raise ValueError("Front is negative.")
 
-        crowding_distances = [0] * len(front)
+        crowding_distances = [0] * len(fns)
         for m in range(len(self._maximize)):
             front = list(sorted(front, key=lambda i: fns[i][m]))
             crowding_distances[front[0]] = math.inf
-            crowding_distances[front[len(front) - 1]] = math.inf
+            crowding_distances[front[-1]] = math.inf
             m_values = [fns[i][m] for i in front]
             scale = max(m_values) - min(m_values)
             if scale == 0:
