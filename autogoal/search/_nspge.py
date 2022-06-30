@@ -369,7 +369,7 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
         elapsed = datetime.timedelta(seconds=elapsed)
         remaining = datetime.timedelta(seconds=remaining)
 
-        best_fn_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in best_fn)
+        best_fn_str_tuple = tuple(f"{float(fn or 0.0):0.3}" for fn in best_fn)
 
         print(
             self.emph("New generation started"),
@@ -383,10 +383,11 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
         if not isinstance(best_fn, (list, tuple)):
             return super().end(best, best_fn)
 
-        best_fn_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in best_fn)
+        best_fn_str_tuple = tuple(f"{float(fn or 0.0):0.3}" for fn in best_fn)
         print(
             self.emph(
-                "Search completed: best_fn=%r, best=\n%r" % (best_fn_str_tuple, best)
+                "Search completed: best_fn=%s, best=\n%r"
+                % (repr(best_fn_str_tuple), best)
             )
         )
 
@@ -394,8 +395,8 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
         if not isinstance(fitness, (list, tuple)):
             return super().eval_solution(solution, fitness)
 
-        fitness_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in fitness)
-        print(self.primary("Fitness=%r" % fitness_str_tuple))
+        fitness_str_tuple = tuple(f"{float(fn or 0.0):0.3}" for fn in fitness)
+        print(self.primary("Fitness=%s" % repr(fitness_str_tuple)))
 
     def update_best(self, new_best, new_fn, previous_best, previous_fn):
         if not isinstance(new_fn, (list, tuple)) and not isinstance(
@@ -403,11 +404,11 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
         ):
             return super().update_best(new_best, new_fn, previous_best, previous_fn)
 
-        new_fn_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in new_fn)
-        prev_fn_str_tuple = tuple(f"{float(fn or 0.0)}:0.3" for fn in previous_fn)
+        new_fn_str_tuple = tuple(f"{float(fn):0.3}" for fn in new_fn)
+        prev_fn_str_tuple = tuple(f"{float(fn):0.3}" for fn in previous_fn)
         print(
             self.success(
-                "Best solution: improved=%r, previous=%r"
-                % (new_fn_str_tuple, prev_fn_str_tuple or 0)
+                "Best solution: improved=%s, previous=%s"
+                % (repr(new_fn_str_tuple), repr(prev_fn_str_tuple or 0))
             )
         )
