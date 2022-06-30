@@ -328,6 +328,7 @@ class NSPESearch(NSSearch):
                     )[: k - len(indices)]
                 )
                 break
+        return indices
 
     def crowding_distance(self, fns, front, i):
         if len(front) == 0:
@@ -348,6 +349,7 @@ class NSPESearch(NSSearch):
                 crowding_distances[i] += (
                     fns[front[i + 1]][m] - fns[front[i - 1]][m]
                 ) / scale
+        return crowding_distances[i]
 
     def load(self, name_pickle_file):
         """Rewrites the probabilistic distribution of metaheuristic with the value of the name model."""
