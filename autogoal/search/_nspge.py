@@ -409,8 +409,8 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
         ):
             return super().update_best(new_best, new_fn, previous_best, previous_fn)
 
-        new_fn_str_tuple = tuple(f"{float(fn):0.3}" for fn in new_fn)
-        prev_fn_str_tuple = tuple(f"{float(fn):0.3}" for fn in previous_fn)
+        new_fn_str_tuple = tuple(f"{float(fn):0.3}" for fn in (new_fn or ()))
+        prev_fn_str_tuple = tuple(f"{float(fn):0.3}" for fn in (previous_fn or ()))
         print("Update best:")
         print(
             self.success(
