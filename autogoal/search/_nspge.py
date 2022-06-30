@@ -385,10 +385,11 @@ class ConsoleLoggerWithMOSupport(ConsoleLogger):
 
         best_fn_str_tuple = tuple(f"{float(fn or 0.0):0.3}" for fn in best_fn)
         print(
+            "Ending:",
             self.emph(
                 "Search completed: best_fn=%s, best=\n%r"
                 % (repr(best_fn_str_tuple), best)
-            )
+            ),
         )
 
     def eval_solution(self, solution, fitness):
